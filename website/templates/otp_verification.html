@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}OTP Verification{% endblock %}
+
+{% block content %}
+<h3 align="center">Two-Factor Authentication</h3>
+<p>Scan the QR code with your authenticator app:</p>
+<img src="{{ uri }}" alt="QR Code">
+<form method="POST" action="{{ url_for('views.verify_otp') }}">
+    <div class="form-group">
+        <label for="otp_code">Authentication Code</label>
+        <input 
+          type="text" 
+          class="form-control" 
+          id="otp_code" 
+          name="otp_code" 
+          placeholder="Enter authentication code"
+        />
+    </div>
+    <br />
+    <button type="submit" class="btn btn-primary">Verify</button>
+</form>
+{% endblock %}

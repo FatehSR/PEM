@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<style>
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #e3f2fd;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        color: #333;
+    }
+
+    .home-container {
+        text-align: center;
+        padding: 30px;
+        background-color: white;
+        border-radius: 10px;
+        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        width: 500px;
+        border-top: 10px solid #1976d2;
+        margin: auto; /* Centering the container horizontally */
+    }
+
+    .home-container h1 {
+        color: #2e7d32;
+        margin-bottom: 20px;
+    }
+
+    .home-container p {
+        font-size: 18px;
+        margin-bottom: 20px;
+    }
+
+    .btn-primary {
+        padding: 10px 20px;
+        font-size: 16px;
+        border: none;
+        background-color: #ff9800;
+        color: white;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        text-decoration: none;
+    }
+
+    .btn-primary:hover {
+        background-color: #fb8c00;
+    }
+</style>
+
+<div class="home-container">
+    <h1>Welcome to Our Platform</h1>
+    <p>Manage your expenses and employee data efficiently with our software.</p>
+    <a href="{{ url_for('auth.login') }}" class="btn btn-primary">Get Started</a>
+</div>
+{% endblock %}

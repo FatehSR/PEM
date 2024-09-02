@@ -1,0 +1,215 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f9fafb;
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.flash-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.flash-messages {
+    background-color: #f0f4f8;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    padding: 10px;
+    margin: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    max-width: 600px;
+    text-align: center;
+}
+
+.flash.success {
+    color: #38a169;
+}
+
+.flash.error {
+    color: #e53e3e;
+}
+
+.dashboard-container {
+    display: flex;
+    flex-direction: row;
+    flex: 1;
+    margin-top: 50px;
+}
+
+.sidebar {
+    background-color: #1e293b;
+    padding: 20px;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 250px;
+    position: fixed;
+    top: 0;
+    left: 0;
+}
+
+.sidebar h2 {
+    color: white;
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.sidebar a {
+    color: white;
+    text-decoration: none;
+    margin: 10px 0;
+    padding: 15px;
+    border-radius: 8px;
+    background-color: #3b82f6;
+    transition: background-color 0.3s, transform 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sidebar a:hover {
+    background-color: #2563eb;
+    transform: scale(1.05);
+}
+
+.sidebar .settings-logout-container {
+    margin-top: auto;
+}
+
+.sidebar .settings, .sidebar .logout {
+    margin: 10px 0;
+}
+
+.main-content {
+    flex: 1;
+    padding: 40px;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-left: 270px;
+    margin-top: 10px;
+    min-height: calc(100vh - 70px);
+    display: flex;
+    flex-direction: column;
+    overflow: auto;
+    padding-bottom: 200px; /* Add padding to ensure space for the calendar */
+}
+
+.top-right-corner {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    z-index: 1000;
+}
+
+.top-right-corner i {
+    font-size: 24px;
+    color: #333;
+    cursor: pointer;
+}
+
+.intro-text {
+    font-size: 1.2em;
+    margin-bottom: 20px;
+    color: #1e293b;
+}
+
+.greeting {
+    font-size: 1.5em;
+    margin-bottom: 20px;
+    color: #1e293b;
+}
+
+.card {
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.3s;
+    margin-bottom: 20px;
+}
+
+.card:hover {
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.card.expenses {
+    background-color: #e0f7fa;
+    border-left: 5px solid #00bcd4;
+}
+
+.card.payroll {
+    background-color: #e8f5e9;
+    border-left: 5px solid #4caf50;
+}
+
+.card h3 {
+    margin-top: 0;
+    color: #1e293b;
+}
+
+.card p, .card table {
+    color: #4b5563;
+}
+
+.card table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.card table th, .card table td {
+    border: 1px solid #e5e7eb;
+    padding: 12px;
+    text-align: left;
+}
+
+.card table th {
+    background-color: #f3f4f6;
+}
+
+.card .view-more {
+    margin-top: 10px;
+    text-align: right;
+}
+
+.card .view-more a {
+    color: #f59e0b;
+    text-decoration: none;
+}
+
+.card .view-more a:hover {
+    text-decoration: underline;
+}
+
+.calendar-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 300px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    background-color: white;
+    padding: 20px;
+    z-index: 1000;
+}
+
+.calendar-container h4 {
+    margin-top: 0;
+    color: #1e293b;
+}
+
+.calendar {
+    width: 100%;
+}

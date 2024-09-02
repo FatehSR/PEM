@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Welcome Back{% endblock %}
+
+{% block content %}
+<style>
+    .welcome-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        text-align: center;
+    }
+
+    .welcome-message {
+        font-size: 2em;
+        margin-bottom: 20px;
+        color: #1e293b;
+    }
+
+    .get-started-btn {
+        padding: 10px 20px;
+        font-size: 1.2em;
+        color: white;
+        background-color: #3b82f6;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+
+    .get-started-btn:hover {
+        background-color: #2563eb;
+    }
+</style>
+
+<div class="welcome-container">
+    <div class="welcome-message">Welcome back to our platform!</div>
+    <a href="{{ url_for('views.dashboard') }}">
+        <button class="get-started-btn">Get Started</button>
+    </a>
+</div>
+{% endblock %}

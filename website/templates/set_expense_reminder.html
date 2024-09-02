@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Add meta tags, title, and other head content here -->
+    <style>
+        /* Add styles specific to expense reminder here */
+        .expense-container {
+            display: flex;
+            flex-direction: row;
+            height: calc(100vh - 70px);
+        }
+
+        .left-side {
+            background-color: #1e293b;
+            padding: 20px;
+            color: white;
+            width: 250px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .left-side h2 {
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .left-side a {
+            color: white;
+            text-decoration: none;
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: #3b82f6;
+            display: block;
+            text-align: center;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        .left-side a:hover {
+            background-color: #2563eb;
+            transform: scale(1.05);
+        }
+
+        .left-side .settings-logout-container {
+            margin-top: auto;
+        }
+
+        .left-side .settings, .left-side .logout {
+            margin: 10px 0;
+        }
+
+        .right-side {
+            flex: 1;
+            margin-left: 270px;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            overflow-y: auto;
+        }
+
+        .header-title {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            color: #1e293b;
+        }
+
+        .card {
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: box-shadow 0.3s;
+            margin-bottom: 20px;
+        }
+
+        .card:hover {
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .card form input, .card form select, .card form button {
+            display: block;
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+
+        .card form button {
+            background-color: #3b82f6;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        .card form button:hover {
+            background-color: #2563eb;
+        }
+
+        .card select {
+            background-color: #ffffff;
+        }
+
+        .reminder-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .reminder-table th, .reminder-table td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+
+        .reminder-table th {
+            background-color: #f4f4f4;
+            font-weight: bold;
+        }
+
+        .reminder-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+    {% extends "base.html" %}
+    {% block title %}Expense Management{% endblock %}
+
+    {% block content %}
+    <div class="expense-container">
+        <div class="left-side">
+            <h2>Expense Management</h2>
+            <a href="{{ url_for('views.dashboard') }}">Dashboard</a>
+            <a href="{{ url_for('views.set_expense_reminder') }}">Set Expense Reminders</a>
+            <a href="{{ url_for('views.expense_report') }}">Expense Report</a>
+            <a href="{{ url_for('views.expense_management') }}">Categorize Expenses</a>
+            <div class="settings-logout-container">
+                <a href="{{ url_for('views.settings') }}" class="settings">Settings</a>
+                <a href="{{ url_for('views.logout') }}" class="logout">Logout</a>
+            </div>
+        </div>
+        <div class="right-side">
+            <div class="header-title">Set Expense Reminders</div>
+
+            <div class="card">
+                <h3>Reminder Details</h3>
+                <form action="{{ url_for('views.set_expense_reminder') }}" method="POST">
+                    <select name="expense" required>
+                        <option value="" disabled selected>Select Expense</option>
+                        <!-- Add options for expenses here -->
+                        <option value="Expense 1">Expense 1</option>
+                        <option value="Expense 2">Expense 2</option>
+                        <!-- More options can be added dynamically -->
+                    </select>
+                    <select name="reminder_type" required>
+                        <option value="" disabled selected>Select Reminder Type</option>
+                        <option value="Daily">Daily</option>
+                        <option value="Weekly">Weekly</option>
+                        <option value="Monthly">Monthly</option>
+                    </select>
+                    <input type="datetime-local" name="reminder_datetime" required>
+                    <button type="submit">Set Reminder</button>
+                </form>
+            </div>
+
+            <!-- Table to list upcoming reminders -->
+            <div class="card">
+                <h3>Upcoming Reminders</h3>
+                <table class="reminder-table">
+                    <thead>
+                        <tr>
+                            <th>Expense</th>
+                            <th>Reminder Type</th>
+                            <th>Reminder Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for reminder in reminders %}
+                        <tr>
+                            <td>{{ reminder.expense }}</td>
+                            <td>{{ reminder.reminder_type }}</td>
+                            <td>{{ reminder.reminder_date }}</td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="3">No upcoming reminders found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+    {% endblock %}
+</body>
+</html>

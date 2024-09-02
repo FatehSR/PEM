@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Add meta tags, title, and other head content here -->
+    <style>
+        /* Reuse styles from payroll management */
+        .payroll-container {
+            display: flex;
+            flex-direction: row;
+            height: calc(100vh - 70px);
+        }
+
+        .left-side {
+            background-color: #1e293b;
+            padding: 20px;
+            color: white;
+            width: 250px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .left-side h2 {
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .left-side a {
+            color: white;
+            text-decoration: none;
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: #3b82f6;
+            display: block;
+            text-align: center;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        .left-side a:hover {
+            background-color: #2563eb;
+            transform: scale(1.05);
+        }
+
+        .left-side .settings-logout-container {
+            margin-top: auto;
+        }
+
+        .left-side .settings, .left-side .logout {
+            margin: 10px 0;
+        }
+
+        .right-side {
+            flex: 1;
+            margin-left: 270px;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            overflow-y: auto;
+        }
+
+        .notification-profile {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 20px;
+        }
+
+        .notification-profile i {
+            font-size: 24px;
+            color: #333;
+            cursor: pointer;
+            margin-left: 15px;
+        }
+
+        .notification-profile .profile-name {
+            font-size: 18px;
+            color: #333;
+            margin-left: 10px;
+        }
+
+        .header-title {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            color: #1e293b;
+        }
+
+        .card {
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: box-shadow 0.3s;
+            margin-bottom: 20px;
+        }
+
+        .card:hover {
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .card form input, .card form button {
+            display: block;
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+
+        .card form button {
+            background-color: #3b82f6;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        .card form button:hover {
+            background-color: #2563eb;
+        }
+
+        .card table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .card table th, .card table td {
+            border: 1px solid #e5e7eb;
+            padding: 12px;
+            text-align: left;
+        }
+
+        .card table th {
+            background-color: #f3f4f6;
+        }
+    </style>
+</head>
+<body>
+    {% extends "base.html" %}
+    {% block title %}Manage Attendance{% endblock %}
+
+    {% block content %}
+    <div class="payroll-container">
+        <div class="left-side">
+            <h2>Payroll Management</h2>
+            <a href="{{ url_for('views.dashboard') }}">Dashboard</a>
+            <a href="{{ url_for('views.payroll_management') }}">Manage Employees</a>
+            <a href="{{ url_for('views.manage_attendance') }}">Manage Attendance</a>
+            <a href="{{ url_for('views.manage_wagerates') }}">Manage Wage Rates</a>
+            <div class="settings-logout-container">
+                <a href="{{ url_for('views.settings') }}" class="settings">Settings</a>
+                <a href="{{ url_for('views.logout') }}" class="logout">Logout</a>
+            </div>
+        </div>
+        <div class="right-side">
+            <div class="notification-profile">
+                <i class="fa fa-bell" aria-hidden="true"></i>
+                <span class="profile-name">{{ user.first_name }}</span>
+            </div>
+            <div class="header-title">Control Employee Attendance!</div>
+
+            <div class="card">
+                <h3>Update Attendance</h3>
+                <form action="{{ url_for('views.manage_attendance') }}" method="POST">
+                    <input type="date" name="date" placeholder="Date" required>
+                    <input type="text" name="employee_id" placeholder="Employee ID" required>
+                    <select name="status" required>
+                        <option value="present">Present</option>
+                        <option value="absent">Absent</option>
+                        <option value="late">Late</option>
+                    </select>
+                    <button type="submit">Update Attendance</button>
+                </form>
+            </div>
+
+            <div class="card">
+                <h3>Attendance Log</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Employee ID</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for record in attendance_records %}
+                        <tr>
+                            <td>{{ record.date }}</td>
+                            <td>{{ record.employee_id }}</td>
+                            <td>{{ record.status }}</td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="3">No attendance records found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endblock %}
+</body>
+</html>

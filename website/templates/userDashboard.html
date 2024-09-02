@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payroll and Expense Management Dashboard</title>
+    <!-- Include Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f9fafb;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .flash-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .flash-messages {
+            background-color: #f0f4f8;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            padding: 10px;
+            margin: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            text-align: center;
+        }
+
+        .flash.success {
+            color: #38a169;
+        }
+
+        .flash.error {
+            color: #e53e3e;
+        }
+
+        .dashboard-container {
+            display: flex;
+            flex-direction: row;
+            flex: 1;
+            margin-top: 50px;
+        }
+
+        .sidebar {
+            background-color: #1e293b;
+            padding: 20px;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 250px;
+            position: fixed;
+            top: 0;
+            left: 0;
+        }
+
+        .sidebar h2 {
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .sidebar a {
+            color: white;
+            text-decoration: none;
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: #3b82f6;
+            transition: background-color 0.3s, transform 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sidebar a:hover {
+            background-color: #2563eb;
+            transform: scale(1.05);
+        }
+
+        .sidebar .settings-logout-container {
+            margin-top: auto;
+        }
+
+        .sidebar .settings, .sidebar .logout {
+            margin: 10px 0;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 40px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-left: 270px;
+            margin-top: -100px;
+            min-height: calc(100vh - 70px);
+            display: flex;
+            flex-direction: column;
+            overflow: auto;
+        }
+
+        .top-right-corner {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            z-index: 1000;
+        }
+
+        .top-right-corner i {
+            font-size: 24px;
+            color: #333;
+            cursor: pointer;
+        }
+
+        .intro-text {
+            font-size: 1.2em;
+            margin-bottom: 20px;
+            color: #1e293b;
+        }
+
+        .greeting {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            color: #1e293b;
+        }
+
+        .card {
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: box-shadow 0.3s;
+            margin-bottom: 20px;
+        }
+
+        .card:hover {
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .card.expenses {
+            background-color: #e0f7fa;
+            border-left: 5px solid #00bcd4;
+        }
+
+        .card.payroll {
+            background-color: #e8f5e9;
+            border-left: 5px solid #4caf50;
+        }
+
+        .card h3 {
+            margin-top: 0;
+            color: #1e293b;
+        }
+
+        .card p, .card table {
+            color: #4b5563;
+        }
+
+        .card table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .card table th, .card table td {
+            border: 1px solid #e5e7eb;
+            padding: 12px;
+            text-align: left;
+        }
+
+        .card table th {
+            background-color: #f3f4f6;
+        }
+
+        .card .view-more {
+            margin-top: 10px;
+            text-align: right;
+        }
+
+        .card .view-more a {
+            color: #f59e0b;
+            text-decoration: none;
+        }
+
+        .card .view-more a:hover {
+            text-decoration: underline;
+        }
+    </style>
+    <script>
+        function logout() {
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', '/logout', true); // Ensure POST method
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            xhr.onload = function () {
+                if (xhr.status === 200) {
+                    // Redirect to the home page after successful logout
+                    window.location.href = '{{ url_for("auth.login") }}';
+                } else {
+                    alert('Logout failed. Please try again.');
+                }
+            };
+            xhr.send(); // No need to send any data
+        }
+    </script>
+</head>
+<body>
+    {% extends "base.html" %}
+    {% block title %}Payroll and Expense Management Dashboard{% endblock %}
+
+    {% block content %}
+    <div class="flash-container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="flash {{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <div class="dashboard-container">
+        <div class="sidebar">
+            <h2>Navigation</h2>
+            <a href="{{ url_for('views.expense_management') }}">Expense Management</a>
+            <a href="{{ url_for('views.payroll_management') }}">Payroll Management</a>
+            <div class="settings-logout-container">
+                <a href="{{ url_for('views.settings') }}" class="settings">Settings</a>
+                <a href="#" class="logout" onclick="logout()">Logout</a>
+            </div>
+        </div>
+        <div class="main-content">
+            <div class="top-right-corner">
+                <i class="fas fa-cog"></i> <!-- Settings Icon -->
+                <i class="fas fa-user"></i> <!-- Profile Icon -->
+                <i class="fas fa-bell"></i> <!-- Notification Bell Icon -->
+            </div>
+            <div class="intro-text">Hi User! Here is today's payroll and expense activities</div>
+            <div class="greeting">{{ greeting_message }}</div>
+            <div class="card expenses" id="expenses">
+                <h3>Expenses</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Expense</th>
+                            <th>Amount</th>
+                            <th>Category</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Office Rent</td>
+                            <td>$1200</td>
+                            <td>Rent</td>
+                        </tr>
+                        <tr>
+                            <td>Electricity Bill</td>
+                            <td>$300</td>
+                            <td>Utilities</td>
+                        </tr>
+                        <tr>
+                            <td>Software Subscription</td>
+                            <td>$50</td>
+                            <td>IT Services</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="view-more">
+                    <a href="{{ url_for('views.expense_management') }}">View More</a>
+                </div>
+            </div>
+
+            <div class="card payroll" id="payroll">
+                <h3>Payroll</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Employee</th>
+                            <th>Salary</th>
+                            <th>Department</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>John Doe</td>
+                            <td>$3000</td>
+                            <td>Finance</td>
+                        </tr>
+                        <tr>
+                            <td>Jane Smith</td>
+                            <td>$3200</td>
+                            <td>Marketing</td>
+                        </tr>
+                        <tr>
+                            <td>Emily Johnson</td>
+                            <td>$2900</td>
+                            <td>Engineering</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="view-more">
+                    <a href="{{ url_for('views.payroll_management') }}">View More</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endblock %}
+</body>
+</html>

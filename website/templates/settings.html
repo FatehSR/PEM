@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Add meta tags, title, and other head content here -->
+</head>
+<body>
+    {% extends "base.html" %}
+    {% block title %}Settings{% endblock %}
+
+    {% block content %}
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f9fafb;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .flash-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            z-index: 1000; /* Make sure it's above other content */
+        }
+
+        .flash-messages {
+            background-color: #f0f4f8;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            padding: 10px;
+            margin: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            text-align: center;
+        }
+
+        .flash.success {
+            color: #38a169;
+        }
+
+        .flash.error {
+            color: #e53e3e;
+        }
+
+        .dashboard-container {
+            display: flex;
+            height: 100%;
+            flex-direction: row;
+            position: relative; /* Set relative positioning for the top-right-corner */
+            margin-top: 50px; /* Ensure content is below the flash message */
+        }
+
+        .sidebar {
+            background-color: #1e293b;
+            padding: 20px;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 250px;
+            position: fixed; /* Make the sidebar fixed */
+            top: 0; /* Align with the top edge */
+            left: 0; /* Align with the left edge */
+        }
+
+        .sidebar h2 {
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .sidebar a {
+            color: white;
+            text-decoration: none;
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: #3b82f6;
+            transition: background-color 0.3s, transform 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sidebar a:hover {
+            background-color: #2563eb;
+            transform: scale(1.05);
+        }
+
+        .sidebar .settings-logout-container {
+            margin-top: auto;
+        }
+
+        .sidebar .dashboard {
+            margin: 10px 0;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 40px;
+            overflow-y: auto;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-left: 270px; /* Adjust margin to account for the fixed sidebar width */
+        }
+
+        .top-right-corner {
+            position: fixed; /* Change to fixed positioning */
+            top: 20px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px; /* Space between icons */
+            z-index: 1000; /* Ensure it's above other content */
+        }
+
+        .top-right-corner i {
+            font-size: 24px;
+            color: #333;
+            cursor: pointer;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            background-color: #fff;
+        }
+
+        .section h3 {
+            margin-top: 0;
+            color: #1e293b;
+        }
+
+        .section label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .section input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .section button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            background-color: #3b82f6;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .section button:hover {
+            background-color: #2563eb;
+        }
+    </style>
+
+    <div class="flash-container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="flash {{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <div class="dashboard-container">
+        <div class="sidebar">
+            <h2>Navigation</h2>
+            <a href="{{ url_for('views.dashboard') }}">Dashboard</a>
+            <div class="settings-logout-container">
+                <a href="{{ url_for('views.settings') }}" class="settings">Settings</a>
+                <a href="{{ url_for('auth.logout') }}" class="logout">Logout</a>
+            </div>
+        </div>
+        <div class="main-content">
+            <div class="section">
+                <h3>Change Password</h3>
+                <form action="{{ url_for('views.settings') }}" method="POST">
+                    <label for="current_password">Current Password</label>
+                    <input type="password" id="current_password" name="current_password" required>
+
+                    <label for="new_password">New Password</label>
+                    <input type="password" id="new_password" name="new_password" required>
+
+                    <label for="confirm_password">Confirm New Password</label>
+                    <input type="password" id="confirm_password" name="confirm_password" required>
+
+                    <button type="submit" name="update_password">Update Password</button>
+                </form>
+            </div>
+
+            <div class="section">
+                <h3>About the Website</h3>
+                <p>Here you can provide information about your website or application.</p>
+            </div>
+
+            <div class="section">
+                <h3>Change Profile</h3>
+                <form action="{{ url_for('views.settings') }}" method="POST">
+                    <label for="name">Name</label>
+                    <input type="text" id="name" name="name" value="{{ user.first_name }}" required>
+
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" value="{{ user.email }}" required>
+
+                    <label for="phone">Phone Number</label>
+                    <input type="text" id="phone" name="phone" value="{{ user.phone_number }}">
+
+                    <button type="submit" name="update_profile">Update Profile</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="top-right-corner">
+        <i class="fa fa-user" aria-hidden="true"></i>
+        <i class="fa fa-bell" aria-hidden="true"></i>
+        <i class="fa fa-cog" aria-hidden="true"></i>
+    </div>
+
+    {% endblock %}
+</body>
+</html>

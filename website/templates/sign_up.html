@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+{% block title %}Create Account{% endblock %}
+
+{% block content %}
+<style>
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #e3f2fd;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        color: #333;
+        overflow: hidden; /* Prevent scrolling */
+    }
+
+    .wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        max-width: 1100px;
+        margin: 0 auto;
+        margin-left: -140px;
+        margin-top: -30px;
+    }
+
+    .left-side {
+        background-color: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        width: 260px; /* Further reduced width */
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        border-left: 10px solid #1976d2;
+        margin-right: 60px; /* Increased margin to push it further left */
+    }
+
+    .left-side h3 {
+        color: #2e7d32;
+        margin-bottom: 20px;
+    }
+
+    .checklist {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .checklist-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+        font-size: 16px;
+    }
+
+    .checklist-item:before {
+        content: "✓";
+        color: #2e7d32;
+        font-weight: bold;
+        margin-right: 10px;
+    }
+
+    .right-side {
+        background-color: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        width: 380px; /* Further reduced width */
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        border-top: 10px solid #1976d2;
+        position: relative;
+    }
+
+    .right-side img {
+        position: absolute;
+        top: -50px;
+        width: 70px;
+        left: calc(50% - 35px); /* Center the logo */
+    }
+
+    .right-side h2 {
+        margin-bottom: 20px;
+        color: #2e7d32;
+        text-align: center;
+        margin-top: 50px; /* Adjusted margin-top for better spacing under the logo */
+    }
+
+    .form-group {
+        margin-bottom: 10px;
+        width: 100%;
+        text-align: left;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+        color: #1976d2;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 10px;
+        font-size: 16px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        box-sizing: border-box;
+    }
+
+    .btn-primary {
+        width: 100%;
+        padding: 10px;
+        font-size: 16px;
+        border: none;
+        background-color: #ff9800;
+        color: white;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        margin-top: 10px;
+    }
+
+    .btn-primary:hover {
+        background-color: #fb8c00;
+    }
+
+    .login-link {
+        margin-top: 10px;
+        color: #2e7d32;
+        font-size: 14px;
+        text-align: center;
+    }
+
+    .login-link a {
+        color: #1976d2;
+        text-decoration: none;
+    }
+
+    .login-link a:hover {
+        text-decoration: underline;
+    }
+</style>
+
+<div class="wrapper">
+    <div class="left-side">
+        <h3>What Our Software Can Do:</h3>
+        <ul class="checklist">
+            <li class="checklist-item">Set expense reminders</li>
+            <li class="checklist-item">Generate expense reports</li>
+            <li class="checklist-item">Categorize expenses</li>
+            <li class="checklist-item">Add/remove employees</li>
+            <li class="checklist-item">Manage employee attendance</li>
+            <li class="checklist-item">Update wage rates</li>
+            <li class="checklist-item">Schedule bill payments</li>
+            <li class="checklist-item">Track employee work hours</li>
+            <li class="checklist-item">Provide financial summaries</li>
+        </ul>
+    </div>
+
+    <div class="right-side">
+        <h2>Create Account</h2>
+        <form method="POST" action="{{ url_for('auth.sign_up') }}">
+            <div class="form-group">
+                <label for="firstName">Full Name</label>
+                <input type="text" class="form-control" id="firstName" name="firstName" placeholder="Enter full name" required>
+            </div>
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" class="form-control" id="email" name="email" placeholder="Enter email" required>
+            </div>
+            <div class="form-group">
+                <label for="password1">Password</label>
+                <input type="password" class="form-control" id="password1" name="password1" placeholder="Enter password" required>
+            </div>
+            <div class="form-group">
+                <label for="password2">Confirm Password</label>
+                <input type="password" class="form-control" id="password2" name="password2" placeholder="Confirm password" required>
+            </div>
+            <div class="form-group">
+                <label for="totp_key">TOTP Key (optional)</label>
+                <input type="text" class="form-control" id="totp_key" name="totp_key" placeholder="Enter TOTP key if you have one (optional)">
+            </div>
+            <div class="form-group">
+                <button type="submit" class="btn-primary">Create Account</button>
+            </div>
+            <div class="login-link">
+                <p>Already have an account? <a href="{{ url_for('auth.login') }}">Login here</a></p>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
