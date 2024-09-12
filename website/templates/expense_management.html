@@ -103,10 +103,6 @@
             background-color: #2563eb;
         }
 
-        .card select {
-            background-color: #ffffff;
-        }
-
         .expense-table {
             width: 100%;
             border-collapse: collapse;
@@ -124,9 +120,64 @@
             font-weight: bold;
         }
 
+        .expense-table td.amount {
+            text-align: right;
+        }
+
         .expense-table tr:nth-child(even) {
             background-color: #f9f9f9;
         }
+
+        /* Add styles for buttons */
+        .log-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 15px;
+        }
+
+        .log-actions button {
+            background-color: #f44336;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+
+        .log-actions button:hover {
+            background-color: #d32f2f;
+        }
+
+        .add-category-container {
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+
+        .add-category-container h3 {
+            margin-bottom: 10px;
+        }
+
+        .add-category-container form input, 
+        .add-category-container form button {
+            display: inline-block;
+            width: auto;
+            margin-right: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+
+        .add-category-container form button {
+            background-color: #3b82f6;
+            color: white;
+            cursor: pointer;
+        }
+
+        .add-category-container form button:hover {
+            background-color: #2563eb;
+        }
+
     </style>
 </head>
 <body>
@@ -140,7 +191,7 @@
             <a href="{{ url_for('views.dashboard') }}">Dashboard</a>
             <a href="{{ url_for('views.set_expense_reminder') }}">Set Expense Reminders</a>
             <a href="{{ url_for('views.expense_report') }}">Expense Report</a>
-            <a href="{{ url_for('views.expense_management') }}">Categorize Expenses</a> <!-- Link to the same page -->
+            <a href="{{ url_for('views.expense_management') }}">Categorize Expenses</a>
             <div class="settings-logout-container">
                 <a href="{{ url_for('views.settings') }}" class="settings">Settings</a>
                 <a href="{{ url_for('views.logout') }}" class="logout">Logout</a>
@@ -153,15 +204,13 @@
                 <h3>Add New Expense</h3>
                 <form action="{{ url_for('views.add_expense') }}" method="POST">
                     <input type="text" name="expense_name" placeholder="Enter expense name" required>
-                    <input type="text" name="amount" placeholder="Enter amount" required>
-                    <input type="text" name="date" placeholder="dd/mm/yyyy" required>
+                    <input type="number" name="amount" placeholder="Enter amount" required>
+                    <input type="date" name="date" required>
                     <select name="category" required>
                         <option value="" disabled selected>Select Category</option>
-                        <option value="Travel">Travel</option>
-                        <option value="Food">Food</option>
-                        <option value="Utilities">Utilities</option>
-                        <option value="Entertainment">Entertainment</option>
-                        <option value="Other">Other</option>
+                        {% for category in categories %}
+                        <option value="{{ category }}">{{ category }}</option>
+                        {% endfor %}
                     </select>
                     <button type="submit">Add Expense</button>
                 </form>
@@ -170,30 +219,47 @@
             <!-- Table to list existing expenses -->
             <div class="card">
                 <h3>List of Expenses</h3>
-                <table class="expense-table">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Amount</th>
-                            <th>Date</th>
-                            <th>Category</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for expense in expenses %}
-                        <tr>
-                            <td>{{ expense.name }}</td>
-                            <td>{{ expense.amount }}</td>
-                            <td>{{ expense.date }}</td>
-                            <td>{{ expense.category }}</td>
-                        </tr>
-                        {% else %}
-                        <tr>
-                            <td colspan="4">No expenses found.</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                <form id="expense-log-form" action="{{ url_for('views.clear_expense_log') }}" method="POST">
+                    <table class="expense-table">
+                        <thead>
+                            <tr>
+                                <th>Select</th>
+                                <th>Name</th>
+                                <th class="amount">Amount</th>
+                                <th>Date</th>
+                                <th>Category</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for expense in expenses %}
+                            <tr>
+                                <td><input type="checkbox" name="expense_ids" value="{{ expense.id }}"></td>
+                                <td>{{ expense.name }}</td>
+                                <td class="amount">${{ expense.amount }}</td>
+                                <td>{{ expense.date }}</td>
+                                <td>{{ expense.category }}</td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="5">No expenses found.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <div class="log-actions">
+                        <button type="submit" name="action" value="delete_selected">Delete Selected</button>
+                        <button type="submit" name="action" value="clear_log">Clear Entire Log</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Add new category -->
+            <div class="card add-category-container">
+                <h3>Add New Category</h3>
+                <form action="{{ url_for('views.add_category') }}" method="POST">
+                    <input type="text" name="new_category" placeholder="Enter new category" required>
+                    <button type="submit">Add Category</button>
+                </form>
             </div>
 
         </div>

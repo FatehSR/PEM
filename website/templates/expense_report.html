@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- Add meta tags, title, and other head content here -->
     <style>
         /* Add styles specific to expense report here */
         .expense-container {
@@ -103,7 +102,7 @@
             background-color: #2563eb;
         }
 
-        .card select {
+        .card select, .card input[type="date"] {
             background-color: #ffffff;
         }
 
@@ -126,6 +125,33 @@
 
         .report-table tr:nth-child(even) {
             background-color: #f9f9f9;
+        }
+
+        /* Add styles for buttons */
+        .log-actions button {
+            background-color: #f44336;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+
+        .log-actions button:hover {
+            background-color: #d32f2f;
+        }
+
+        .log-actions {
+            margin-top: 15px;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .log-actions a {
+            color: #3b82f6;
+            text-decoration: none;
+            font-weight: bold;
         }
     </style>
 </head>
@@ -152,18 +178,17 @@
             <div class="card">
                 <h3>Generate Report</h3>
                 <form action="{{ url_for('views.expense_report') }}" method="POST">
-                    <select name="period" required>
-                        <option value="" disabled selected>Select Period</option>
-                        <option value="Monthly">Monthly</option>
-                        <option value="Quarterly">Quarterly</option>
-                        <option value="Yearly">Yearly</option>
-                    </select>
+                    <label for="start_date">Select Start Date:</label>
+                    <input type="date" name="start_date" required>
+                    
+                    <label for="end_date">Select End Date:</label>
+                    <input type="date" name="end_date" required>
+
                     <select name="category" required>
                         <option value="" disabled selected>Select Expense Category</option>
-                        <!-- Add options dynamically -->
-                        <option value="Travel">Travel</option>
-                        <option value="Food">Food</option>
-                        <option value="Utilities">Utilities</option>
+                        {% for category in categories %}
+                        <option value="{{ category }}">{{ category }}</option>
+                        {% endfor %}
                     </select>
                     <select name="report_type" required>
                         <option value="" disabled selected>Select Report Type</option>
@@ -174,32 +199,47 @@
                 </form>
             </div>
 
-            <!-- Table to display the generated report -->
+            <!-- Table to display the saved reports -->
             <div class="card">
-                <h3>Generated Report</h3>
-                <table class="report-table">
-                    <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>Expense</th>
-                            <th>Amount</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- Add dynamic rows here -->
-                        {% for entry in report_entries %}
-                        <tr>
-                            <td>{{ entry.date }}</td>
-                            <td>{{ entry.expense }}</td>
-                            <td>{{ entry.amount }}</td>
-                        </tr>
-                        {% else %}
-                        <tr>
-                            <td colspan="3">No data available.</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                <h3>Saved Reports Log</h3>
+                <form id="expense-report-log-form" action="{{ url_for('views.clear_expense_report_log') }}" method="POST">
+                    <table class="report-table">
+                        <thead>
+                            <tr>
+                                <th>Select</th>
+                                <th>Category</th>
+                                <th>Start Date</th>
+                                <th>End Date</th>
+                                <th>Report Type</th>
+                                <th>Total Amount</th>
+                                <th>Link to Report</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if reports %}
+                            {% for report in reports %}
+                            <tr>
+                                <td><input type="checkbox" name="report_ids" value="{{ report.id }}"></td>
+                                <td>{{ report.category }}</td>
+                                <td>{{ report.start_date.strftime('%Y-%m-%d') }}</td>
+                                <td>{{ report.end_date.strftime('%Y-%m-%d') }}</td>
+                                <td>{{ report.report_type }}</td>
+                                <td>${{ report.total_amount }}</td>
+                                <td><a href="{{ url_for('views.open_report', category=report.category, start_date=report.start_date.strftime('%Y-%m-%d'), end_date=report.end_date.strftime('%Y-%m-%d')) }}">Open Report</a></td>
+                            </tr>
+                            {% endfor %}
+                            {% else %}
+                            <tr>
+                                <td colspan="7">No reports available.</td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                    <div class="log-actions">
+                        <button type="submit" name="action" value="delete_selected">Delete Selected</button>
+                        <button type="submit" name="action" value="clear_log">Clear Entire Log</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>

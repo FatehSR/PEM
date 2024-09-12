@@ -1,9 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- Add meta tags, title, and other head content here -->
     <style>
-        /* Add styles specific to payroll management here */
+        /* Styling as before */
         .payroll-container {
             display: flex;
             flex-direction: row;
@@ -65,25 +64,6 @@
             overflow-y: auto;
         }
 
-        .notification-profile {
-            display: flex;
-            justify-content: flex-end;
-            margin-bottom: 20px;
-        }
-
-        .notification-profile i {
-            font-size: 24px;
-            color: #333;
-            cursor: pointer;
-            margin-left: 15px;
-        }
-
-        .notification-profile .profile-name {
-            font-size: 18px;
-            color: #333;
-            margin-left: 10px;
-        }
-
         .header-title {
             font-size: 1.5em;
             margin-bottom: 20px;
@@ -136,11 +116,36 @@
         .card table th {
             background-color: #f3f4f6;
         }
+
+        .hidden {
+            display: none;
+        }
+
+        /* Add spacing to separate the buttons from the table */
+        .button-group {
+            margin-top: 20px;
+            text-align: right;
+        }
     </style>
+    <script>
+        function toggleWorkingHours() {
+            const wageType = document.querySelector('select[name="wage_type"]').value;
+            const workingHoursInput = document.getElementById('working-hours-input');
+            if (wageType === 'hourly') {
+                workingHoursInput.classList.remove('hidden');
+            } else {
+                workingHoursInput.classList.add('hidden');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelector('select[name="wage_type"]').addEventListener('change', toggleWorkingHours);
+        });
+    </script>
 </head>
 <body>
     {% extends "base.html" %}
-    {% block title %}Payroll Management{% endblock %}
+    {% block title %}Manage Wage Rates{% endblock %}
 
     {% block content %}
     <div class="payroll-container">
@@ -156,10 +161,6 @@
             </div>
         </div>
         <div class="right-side">
-            <div class="notification-profile">
-                <i class="fa fa-bell" aria-hidden="true"></i>
-                <span class="profile-name">{{ user.first_name }}</span>
-            </div>
             <div class="header-title">Control Employee Wage Rates!</div>
 
             <div class="card">
@@ -171,6 +172,9 @@
                         <option value="hourly">Hourly</option>
                         <option value="salaried">Salaried</option>
                     </select>
+                    <div id="working-hours-input" class="hidden">
+                        <input type="number" name="working_hours" placeholder="Working Hours" step="0.01">
+                    </div>
                     <input type="number" name="wage_amount" placeholder="Wage Amount" step="0.01" required>
                     <button type="submit">Update Wage Rate</button>
                 </form>
@@ -178,24 +182,36 @@
 
             <div class="card">
                 <h3>Wage Rates Log</h3>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Employee ID</th>
-                            <th>Wage Type</th>
-                            <th>Wage Amount</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for wage in wages %}
-                        <tr>
-                            <td>{{ wage.employee_id }}</td>
-                            <td>{{ wage.wage_type }}</td>
-                            <td>{{ wage.wage_amount }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                <form id="wage-rates-log-form" action="{{ url_for('views.clear_wagerates_log') }}" method="POST">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Select</th>
+                                <th>Employee ID</th>
+                                <th>Wage Type</th>
+                                <th>Wage Amount</th>
+                                <th>Days Worked</th>
+                                <th>Total Wage Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for wage in wages %}
+                            <tr>
+                                <td><input type="checkbox" name="wage_ids" value="{{ wage.id }}"></td>
+                                <td>{{ wage.employee_id }}</td>
+                                <td>{{ wage.wage_type }}</td>
+                                <td>{{ wage.wage_amount }}</td>
+                                <td>{{ wage.days_worked }}</td>
+                                <td>{{ wage.total_wage_amount }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <div class="button-group">
+                        <button type="submit" name="action" value="delete_selected">Delete Selected</button>
+                        <button type="submit" name="action" value="clear_log">Clear Entire Log</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>

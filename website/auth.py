@@ -74,14 +74,27 @@ def sign_up():
 @auth.route('/forgot-password', methods=['GET', 'POST'])
 def forgot_password():
     if request.method == 'POST':
-        email = request.form.get('email')
+        email = request.form.get('email')  # User provides email
+        current_password = request.form.get('current_password')
+        new_password = request.form.get('new_password')
+        confirm_password = request.form.get('confirm_password')
+
+        # Find user by email
         user = User.query.filter_by(email=email).first()
-        if user:
-            # Here you would typically send an email with a password reset link
-            flash('A password reset link has been sent to your email address.', category='info')
-            # Redirect to login after showing the flash message
-            return redirect(url_for('auth.login'))
+
+        if not user:
+            flash('No user found with this email address.', category='error')
+        elif not check_password_hash(user.password, current_password):
+            flash('Current password is incorrect.', category='error')
+        elif new_password != confirm_password:
+            flash('New passwords do not match.', category='error')
+        elif len(new_password) < 7:
+            flash('New password must be at least 7 characters long.', category='error')
         else:
-            flash('Email does not exist.', category='error')
+            # Update password
+            user.password = generate_password_hash(new_password, method='pbkdf2:sha256')
+            db.session.commit()
+            flash('Password updated successfully! Please log in with your new password.', category='success')
+            return redirect(url_for('auth.login'))
 
     return render_template('forgot_password.html')

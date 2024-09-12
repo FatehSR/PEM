@@ -65,25 +65,6 @@
             overflow-y: auto;
         }
 
-        .notification-profile {
-            display: flex;
-            justify-content: flex-end;
-            margin-bottom: 20px;
-        }
-
-        .notification-profile i {
-            font-size: 24px;
-            color: #333;
-            cursor: pointer;
-            margin-left: 15px;
-        }
-
-        .notification-profile .profile-name {
-            font-size: 18px;
-            color: #333;
-            margin-left: 10px;
-        }
-
         .header-title {
             font-size: 1.5em;
             margin-bottom: 20px;
@@ -136,7 +117,74 @@
         .card table th {
             background-color: #f3f4f6;
         }
+
+        .editable {
+            background-color: #f3f4f6;
+        }
+
+        .editable input {
+            width: 100%;
+            border: none;
+            background-color: #fff;
+            padding: 5px;
+            border-radius: 4px;
+        }
+
+        .editable input:focus {
+            outline: none;
+            border: 1px solid #3b82f6;
+        }
     </style>
+    <script>
+        function deleteEmployee(employeeId) {
+            fetch(`/delete_employee/${employeeId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            }).then(response => {
+                if (response.ok) {
+                    document.getElementById(`employee-${employeeId}`).remove();
+                } else {
+                    alert('Failed to delete employee.');
+                }
+            });
+        }
+
+        function enableEditing(rowId) {
+            const row = document.getElementById(rowId);
+            row.querySelectorAll('.editable').forEach(td => {
+                const value = td.innerText;
+                td.innerHTML = `<input type="text" value="${value}">`;
+            });
+
+            row.querySelector('.edit-button').style.display = 'none';
+            row.querySelector('.save-button').style.display = 'inline';
+        }
+
+        function saveEmployee(rowId, employeeId) {
+            const row = document.getElementById(rowId);
+            const name = row.querySelector('td.name input').value;
+            const position = row.querySelector('td.position input').value;
+
+            fetch(`/edit_employee/${employeeId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({name, position})
+            }).then(response => {
+                if (response.ok) {
+                    row.querySelector('td.name').innerText = name;
+                    row.querySelector('td.position').innerText = position;
+                    row.querySelector('.edit-button').style.display = 'inline';
+                    row.querySelector('.save-button').style.display = 'none';
+                } else {
+                    alert('Failed to save employee.');
+                }
+            });
+        }
+    </script>
 </head>
 <body>
     {% extends "base.html" %}
@@ -156,10 +204,6 @@
             </div>
         </div>
         <div class="right-side">
-            <div class="notification-profile">
-                <i class="fa fa-bell" aria-hidden="true"></i>
-                <span class="profile-name">{{ user.first_name }}</span>
-            </div>
             <div class="header-title">Manage your employees efficiently!</div>
 
             <div id="manage-employees" class="card">
@@ -167,7 +211,7 @@
                 <form action="{{ url_for('views.payroll_management') }}" method="POST">
                     <input type="text" name="name" placeholder="Employee Name" required>
                     <input type="text" name="employee_id" placeholder="Employee ID" required>
-                    <input type="text" name="department" placeholder="Department" required>
+                    <input type="text" name="position" placeholder="Position" required>
                     <button type="submit">Add Employee</button>
                 </form>
             </div>
@@ -185,13 +229,14 @@
                     </thead>
                     <tbody>
                         {% for employee in employees %}
-                        <tr>
-                            <td>{{ employee.id }}</td>
-                            <td>{{ employee.name }}</td>
-                            <td>{{ employee.position }}</td>
+                        <tr id="employee-{{ employee.id }}">
+                            <td>{{ employee.employee_id }}</td>
+                            <td class="name editable">{{ employee.name }}</td>
+                            <td class="position editable">{{ employee.position }}</td>
                             <td>
-                                <a href="{{ url_for('views.edit_employee', employee_id=employee.id) }}">Edit</a> |
-                                <a href="{{ url_for('views.delete_employee', employee_id=employee.id) }}">Delete</a>
+                                <button type="button" class="edit-button" onclick="enableEditing('employee-{{ employee.id }}')">Edit</button>
+                                <button type="button" class="save-button" style="display:none;" onclick="saveEmployee('employee-{{ employee.id }}', {{ employee.id }})">Save</button>
+                                <button type="button" onclick="deleteEmployee({{ employee.id }})">Delete</button>
                             </td>
                         </tr>
                         {% endfor %}

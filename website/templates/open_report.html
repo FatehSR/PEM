@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style>
+        /* Styles for the report page */
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        .navbar {
+            background-color: #1e293b;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+        }
+
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            margin: 0 15px;
+            font-weight: bold;
+        }
+
+        .navbar a:hover {
+            text-decoration: underline;
+        }
+
+        .container {
+            padding: 30px;
+        }
+
+        .header-title {
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+
+        .filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .filters label {
+            font-weight: bold;
+        }
+
+        .filters input, .filters select {
+            padding: 5px;
+            font-size: 14px;
+        }
+
+        .filters .update-btn {
+            background-color: #16a34a;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+        }
+
+        .report-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .report-table th, .report-table td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+
+        .report-table th {
+            background-color: #2563eb; /* Match theme's blue */
+            color: white;
+        }
+
+        .editable {
+            background-color: #f0f8ff;
+        }
+
+        .total-row td {
+            font-weight: bold;
+        }
+
+        .total-row {
+            background-color: #f1f5f9;
+        }
+
+        .no-data {
+            text-align: center;
+            font-weight: bold;
+            padding: 20px;
+            background-color: #f9fafb;
+            border: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="navbar">
+        <div class="nav-links">
+            <a href="{{ url_for('views.dashboard') }}">Dashboard</a>
+            <a href="{{ url_for('views.set_expense_reminder') }}">Set Expense Reminder</a>
+            <a href="{{ url_for('views.expense_report') }}">Expense Report</a>
+            <a href="{{ url_for('views.expense_management') }}">Categorize Expenses</a>
+            <a href="{{ url_for('views.settings') }}">Settings</a>
+            <a href="{{ url_for('views.logout') }}">Logout</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="header-title">Expenses by Category</div>
+
+        <div class="filters">
+            <div>
+                <label for="date-range">Date Range:</label>
+                <input type="date" id="start_date" name="start_date" value="{{ start_date.strftime('%Y-%m-%d') }}">
+                to
+                <input type="date" id="end_date" name="end_date" value="{{ end_date.strftime('%Y-%m-%d') }}">
+            </div>
+            <div>
+                <label for="category">Category:</label>
+                <select id="category" name="category">
+                    {% for cat in categories %}
+                    <option value="{{ cat }}" {% if cat == category %}selected{% endif %}>{{ cat }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button class="update-btn" onclick="document.forms[0].submit();">Update</button>
+        </div>
+
+        <form action="{{ url_for('views.update_expenses') }}" method="POST">
+            <!-- Hidden inputs for start_date, end_date, and category -->
+            <input type="hidden" name="start_date" value="{{ start_date.strftime('%Y-%m-%d') }}">
+            <input type="hidden" name="end_date" value="{{ end_date.strftime('%Y-%m-%d') }}">
+            <input type="hidden" name="category" value="{{ category }}">
+
+            <table class="report-table">
+                <thead>
+                    <tr>
+                        <th>Vendor</th>
+                        <th>Client</th>
+                        <th>Notes</th>
+                        <th>Amount (AUD)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if expenses %}
+                        {% for expense in expenses %}
+                        <tr>
+                            <td><input type="text" name="vendor_{{ expense.id }}" class="editable" value="{{ expense.vendor }}"></td>
+                            <td><input type="text" name="client_{{ expense.id }}" class="editable" value="{{ expense.client }}"></td>
+                            <td><input type="text" name="notes_{{ expense.id }}" class="editable" value="{{ expense.notes }}"></td>
+                            <td>${{ expense.amount }}</td>
+                        </tr>
+                        {% endfor %}
+                        <tr class="total-row">
+                            <td colspan="3">ALL TOTAL (AUD)</td>
+                            <td>${{ total_amount }}</td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="4" class="no-data">No data available for the selected period.</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+            <button type="submit" class="update-btn">Save Changes</button>
+        </form>
+    </div>
+
+</body>
+</html>

@@ -163,6 +163,11 @@
             border-left: 5px solid #4caf50;
         }
 
+        .card.urgent {
+            background-color: #fff3cd;
+            border-left: 5px solid #ffc107;
+        }
+
         .card h3 {
             margin-top: 0;
             color: #1e293b;
@@ -200,8 +205,84 @@
         .card .view-more a:hover {
             text-decoration: underline;
         }
+
+        .urgent-reminders {
+            margin-top: 20px;
+        }
+
+        .urgent-reminders ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        .urgent-reminders li {
+            background-color: #ffeeba;
+            padding: 10px;
+            border: 1px solid #ffc107;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .urgent-reminders li button {
+            background-color: #28a745;
+            color: white;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .urgent-reminders li button:hover {
+            background-color: #218838;
+        }
+
     </style>
     <script>
+        // AJAX function for marking a reminder as paid and removing expense
+        function markExpensePaid(reminderId) {
+            const button = document.getElementById(`paid-button-${reminderId}`);
+            button.disabled = true;  // Disable the button while processing
+            button.innerText = 'Processing...';
+
+            fetch(`/mark-expense-paid/${reminderId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+            }).then(response => {
+                if (response.ok) {
+                    response.json().then(data => {
+                        if (data.success) {
+                            // Remove the reminder from the DOM
+                            document.getElementById(`reminder-${reminderId}`).remove();
+                            const expenseRow = document.querySelector(`[data-expense-reminder-id="${reminderId}"]`);
+                            if (expenseRow) {
+                                expenseRow.remove();  // Remove the corresponding expense from the table
+                            }
+                            alert(data.success);  // Display success message
+                        } else {
+                            alert(data.error || 'Error marking expense as paid.');
+                        }
+                    }).catch(error => {
+                        console.error('Error parsing response:', error);
+                        alert('Error parsing response.');
+                    });
+                } else {
+                    response.json().then(data => {
+                        alert(data.error || 'Error marking expense as paid.');
+                    }).catch(error => {
+                        alert('Error processing request.');
+                        console.error('Response processing error:', error);
+                    });
+                }
+            }).catch(error => {
+                console.error('Fetch error:', error);
+                alert('Error marking expense as paid.');
+                button.disabled = false;
+                button.innerText = 'Mark Expense Paid';
+            });
+        }
+
         function logout() {
             var xhr = new XMLHttpRequest();
             xhr.open('POST', '/logout', true); // Ensure POST method
@@ -225,7 +306,7 @@
     {% block content %}
     <div class="flash-container">
         {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
+        {% if messages %}
                 <div class="flash-messages">
                     {% for category, message in messages %}
                         <div class="flash {{ category }}">{{ message }}</div>
@@ -238,6 +319,7 @@
     <div class="dashboard-container">
         <div class="sidebar">
             <h2>Navigation</h2>
+            <a href="{{ url_for('views.dashboard') }}">Dashboard</a>
             <a href="{{ url_for('views.expense_management') }}">Expense Management</a>
             <a href="{{ url_for('views.payroll_management') }}">Payroll Management</a>
             <div class="settings-logout-container">
@@ -245,14 +327,34 @@
                 <a href="#" class="logout" onclick="logout()">Logout</a>
             </div>
         </div>
+
         <div class="main-content">
             <div class="top-right-corner">
-                <i class="fas fa-cog"></i> <!-- Settings Icon -->
-                <i class="fas fa-user"></i> <!-- Profile Icon -->
-                <i class="fas fa-bell"></i> <!-- Notification Bell Icon -->
+                <a href="{{ url_for('views.settings') }}"><i class="fas fa-cog"></i></a>
+                <a href="{{ url_for('views.settings') }}"><i class="fas fa-user"></i></a>
             </div>
             <div class="intro-text">Hi User! Here is today's payroll and expense activities</div>
             <div class="greeting">{{ greeting_message }}</div>
+
+            <!-- Urgent Expense Reminders Section -->
+            <div class="urgent-reminders">
+                <h3>Urgent Expense Reminders</h3>
+                {% if urgent_reminders %}
+                    <ul>
+                        {% for reminder in urgent_reminders %}
+                            <li id="reminder-{{ reminder.id }}">
+                                <strong>Expense:</strong> {{ reminder.expense.name }} - ${{ reminder.expense.amount }} <br>
+                                <strong>Due Date:</strong> {{ reminder.reminder_datetime.strftime('%Y-%m-%d %H:%M:%S') }} <br>
+                                <button id="paid-button-{{ reminder.id }}" onclick="markExpensePaid('{{ reminder.id }}')">Mark Expense Paid</button>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p>No urgent expense reminders at the moment.</p>
+                {% endif %}
+            </div>
+
+            <!-- Expenses Section -->
             <div class="card expenses" id="expenses">
                 <h3>Expenses</h3>
                 <table>
@@ -264,21 +366,19 @@
                         </tr>
                     </thead>
                     <tbody>
+                        {% if recent_expenses %}
+                            {% for expense in recent_expenses %}
+                            <tr {% if expense.related_reminders and expense.related_reminders[0] %} data-expense-reminder-id="{{ expense.related_reminders[0].id }}" {% endif %}>
+                                <td>{{ expense.name }}</td>
+                                <td>${{ expense.amount }}</td>
+                                <td>{{ expense.category }}</td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
                         <tr>
-                            <td>Office Rent</td>
-                            <td>$1200</td>
-                            <td>Rent</td>
+                            <td colspan="3">No recent expenses found.</td>
                         </tr>
-                        <tr>
-                            <td>Electricity Bill</td>
-                            <td>$300</td>
-                            <td>Utilities</td>
-                        </tr>
-                        <tr>
-                            <td>Software Subscription</td>
-                            <td>$50</td>
-                            <td>IT Services</td>
-                        </tr>
+                        {% endif %}
                     </tbody>
                 </table>
                 <div class="view-more">
@@ -286,40 +386,37 @@
                 </div>
             </div>
 
-            <div class="card payroll" id="payroll">
-                <h3>Payroll</h3>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Employee</th>
-                            <th>Salary</th>
-                            <th>Department</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>John Doe</td>
-                            <td>$3000</td>
-                            <td>Finance</td>
-                        </tr>
-                        <tr>
-                            <td>Jane Smith</td>
-                            <td>$3200</td>
-                            <td>Marketing</td>
-                        </tr>
-                        <tr>
-                            <td>Emily Johnson</td>
-                            <td>$2900</td>
-                            <td>Engineering</td>
-                        </tr>
-                    </tbody>
-                </table>
-                <div class="view-more">
-                    <a href="{{ url_for('views.payroll_management') }}">View More</a>
-                </div>
-            </div>
-        </div>
+<!-- Payroll Section -->
+<div class="card payroll" id="payroll">
+    <h3>Payroll</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Employee</th>
+                <th>Position</th>
+                <th>Salary</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if recent_payrolls %}
+                {% for payroll in recent_payrolls %}
+                <tr>
+                    <td>{{ payroll.employee_name }}</td>
+                    <td>{{ payroll.position }}</td>
+                    <td>${{ payroll.salary }}</td>
+                </tr>
+                {% endfor %}
+            {% else %}
+            <tr>
+                <td colspan="3">No recent payrolls found.</td>
+            </tr>
+            {% endif %}
+        </tbody>
+    </table>
+    <div class="view-more">
+        <a href="{{ url_for('views.payroll_management') }}">View More</a>
     </div>
+</div>
     {% endblock %}
 </body>
 </html>

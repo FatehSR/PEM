@@ -44,9 +44,54 @@
         .flash.error {
             color: #e53e3e;
         }
+
+        /* Loading Animation Styles */
+        #loading-overlay {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            background: rgba(255, 255, 255, 0.9);
+            z-index: 10000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 1;
+            visibility: visible;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        #loading-overlay.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: #4CAF50;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
     </style>
 </head>
 <body>
+    <!-- Loading Overlay -->
+    <div id="loading-overlay">
+        <div class="spinner"></div>
+    </div>
+
     <!-- Commented out navbar section -->
     {# 
     {% if request.endpoint not in ['auth.login', 'auth.sign_up'] %}
@@ -111,5 +156,27 @@
       type="text/javascript"
       src="{{ url_for('static', filename='index.js') }}"
     ></script>
+
+    <script>
+        // Hide the loading overlay when the page has fully loaded
+        window.addEventListener('load', function() {
+            const loadingOverlay = document.getElementById('loading-overlay');
+            loadingOverlay.classList.add('hidden');
+        });
+
+        // Show the loading overlay when navigating away from the page
+        window.addEventListener('beforeunload', function() {
+            const loadingOverlay = document.getElementById('loading-overlay');
+            loadingOverlay.classList.remove('hidden');
+        });
+
+        // Handle internal navigation (e.g., SPA or PJAX)
+        document.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', function() {
+                const loadingOverlay = document.getElementById('loading-overlay');
+                loadingOverlay.classList.remove('hidden');
+            });
+        });
+    </script>
 </body>
 </html>

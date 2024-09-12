@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- Add meta tags, title, and other head content here -->
     <style>
         /* Reuse styles from payroll management */
         .payroll-container {
@@ -65,25 +64,6 @@
             overflow-y: auto;
         }
 
-        .notification-profile {
-            display: flex;
-            justify-content: flex-end;
-            margin-bottom: 20px;
-        }
-
-        .notification-profile i {
-            font-size: 24px;
-            color: #333;
-            cursor: pointer;
-            margin-left: 15px;
-        }
-
-        .notification-profile .profile-name {
-            font-size: 18px;
-            color: #333;
-            margin-left: 10px;
-        }
-
         .header-title {
             font-size: 1.5em;
             margin-bottom: 20px;
@@ -102,7 +82,7 @@
             box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
         }
 
-        .card form input, .card form button {
+        .card form input, .card form button, .card form select {
             display: block;
             width: 100%;
             margin-bottom: 10px;
@@ -136,6 +116,16 @@
         .card table th {
             background-color: #f3f4f6;
         }
+
+        .hidden {
+            display: none;
+        }
+
+        /* Add spacing to separate the buttons from the table */
+        .button-group {
+            margin-top: 20px;
+            text-align: right;
+        }
     </style>
 </head>
 <body>
@@ -156,10 +146,6 @@
             </div>
         </div>
         <div class="right-side">
-            <div class="notification-profile">
-                <i class="fa fa-bell" aria-hidden="true"></i>
-                <span class="profile-name">{{ user.first_name }}</span>
-            </div>
             <div class="header-title">Control Employee Attendance!</div>
 
             <div class="card">
@@ -178,28 +164,36 @@
 
             <div class="card">
                 <h3>Attendance Log</h3>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>Employee ID</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for record in attendance_records %}
-                        <tr>
-                            <td>{{ record.date }}</td>
-                            <td>{{ record.employee_id }}</td>
-                            <td>{{ record.status }}</td>
-                        </tr>
-                        {% else %}
-                        <tr>
-                            <td colspan="3">No attendance records found.</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                <form id="attendance-log-form" action="{{ url_for('views.clear_attendance_log') }}" method="POST">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Select</th>
+                                <th>Date</th>
+                                <th>Employee ID</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for record in attendance_records %}
+                            <tr>
+                                <td><input type="checkbox" name="attendance_ids" value="{{ record.id }}"></td>
+                                <td>{{ record.date }}</td>
+                                <td>{{ record.employee_id }}</td>
+                                <td>{{ record.status }}</td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="4">No attendance records found.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <div class="button-group">
+                        <button type="submit" name="action" value="delete_selected">Delete Selected</button>
+                        <button type="submit" name="action" value="clear_log">Clear Entire Log</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
