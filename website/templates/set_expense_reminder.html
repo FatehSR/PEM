@@ -173,18 +173,14 @@
             <div class="card">
                 <h3>Reminder Details</h3>
                 <form action="{{ url_for('views.set_expense_reminder') }}" method="POST">
+                    <!-- Keep the Select Expense dropdown -->
                     <select name="expense" required>
                         <option value="" disabled selected>Select Expense</option>
                         {% for category in expense_totals.keys() %}
                         <option value="{{ category }}">{{ category }}</option>
                         {% endfor %}
                     </select>
-                    <select name="reminder_type" required>
-                        <option value="" disabled selected>Select Reminder Type</option>
-                        <option value="Daily">Daily</option>
-                        <option value="Weekly">Weekly</option>
-                        <option value="Monthly">Monthly</option>
-                    </select>
+                    <!-- Removed Reminder Type, only need reminder_datetime -->
                     <input type="datetime-local" name="reminder_datetime" required>
                     <button type="submit">Set Reminder</button>
                 </form>
@@ -200,7 +196,6 @@
                                 <th>Select</th>
                                 <th>Expense</th>
                                 <th>Expense Total</th>
-                                <th>Reminder Type</th>
                                 <th>Reminder Date</th>
                             </tr>
                         </thead>
@@ -210,12 +205,11 @@
                                 <td><input type="checkbox" name="reminder_ids" value="{{ reminder.id }}"></td>
                                 <td>{{ reminder.expense.category }}</td>
                                 <td>${{ expense_totals.get(reminder.expense.category, 0) }}</td>
-                                <td>{{ reminder.reminder_type }}</td>
                                 <td>{{ reminder.reminder_datetime }}</td>
                             </tr>
                             {% else %}
                             <tr>
-                                <td colspan="5">No upcoming reminders found.</td>
+                                <td colspan="4">No upcoming reminders found.</td>
                             </tr>
                             {% endfor %}
                         </tbody>

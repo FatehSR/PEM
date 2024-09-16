@@ -221,6 +221,13 @@
             border: 1px solid #ffc107;
             border-radius: 8px;
             margin-bottom: 10px;
+            position: relative;
+            transition: opacity 0.5s ease-out;
+        }
+
+        /* Fade-out class for the disappearing reminder */
+        .fade-out {
+            opacity: 0;
         }
 
         .urgent-reminders li button {
@@ -238,7 +245,7 @@
 
     </style>
     <script>
-        // AJAX function for marking a reminder as paid and removing expense
+        // AJAX function for marking a reminder as paid and hiding the alert
         function markExpensePaid(reminderId) {
             const button = document.getElementById(`paid-button-${reminderId}`);
             button.disabled = true;  // Disable the button while processing
@@ -253,8 +260,15 @@
                 if (response.ok) {
                     response.json().then(data => {
                         if (data.success) {
-                            // Remove the reminder from the DOM
-                            document.getElementById(`reminder-${reminderId}`).remove();
+                            // Apply fade-out effect before removing the reminder
+                            const reminderElement = document.getElementById(`reminder-${reminderId}`);
+                            reminderElement.classList.add('fade-out');
+
+                            // Remove the reminder from the DOM after fade effect
+                            setTimeout(() => {
+                                reminderElement.remove();
+                            }, 500);  // Matches the CSS transition duration
+
                             const expenseRow = document.querySelector(`[data-expense-reminder-id="${reminderId}"]`);
                             if (expenseRow) {
                                 expenseRow.remove();  // Remove the corresponding expense from the table
@@ -283,6 +297,35 @@
             });
         }
 
+        // AJAX polling function to load new reminders every 5 seconds
+        function loadUrgentReminders() {
+            fetch('/get_urgent_reminders')
+                .then(response => response.json())
+                .then(data => {
+                    const reminderList = document.querySelector('.urgent-reminders ul');
+                    reminderList.innerHTML = '';  // Clear the list before updating
+                    
+                    if (data.length > 0) {
+                        data.forEach(reminder => {
+                            const reminderItem = document.createElement('li');
+                            reminderItem.id = `reminder-${reminder.id}`;
+                            reminderItem.innerHTML = `
+                                <strong>Expense:</strong> ${reminder.expense_name} - $${reminder.amount} <br>
+                                <strong>Due Date:</strong> ${reminder.reminder_datetime} <br>
+                                <button id="paid-button-${reminder.id}" onclick="markExpensePaid('${reminder.id}')">Mark Expense Paid</button>
+                            `;
+                            reminderList.appendChild(reminderItem);
+                        });
+                    } else {
+                        reminderList.innerHTML = '<p>No urgent expense reminders at the moment.</p>';
+                    }
+                })
+                .catch(error => console.error('Error fetching reminders:', error));
+        }
+
+        // Poll the server every 5 seconds for new reminders
+        setInterval(loadUrgentReminders, 5000);
+
         function logout() {
             var xhr = new XMLHttpRequest();
             xhr.open('POST', '/logout', true); // Ensure POST method
@@ -307,12 +350,12 @@
     <div class="flash-container">
         {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
-                <div class="flash-messages">
-                    {% for category, message in messages %}
-                        <div class="flash {{ category }}">{{ message }}</div>
-                    {% endfor %}
-                </div>
-            {% endif %}
+            <div class="flash-messages">
+                {% for category, message in messages %}
+                    <div class="flash {{ category }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
         {% endwith %}
     </div>
 
@@ -339,19 +382,9 @@
             <!-- Urgent Expense Reminders Section -->
             <div class="urgent-reminders">
                 <h3>Urgent Expense Reminders</h3>
-                {% if urgent_reminders %}
-                    <ul>
-                        {% for reminder in urgent_reminders %}
-                            <li id="reminder-{{ reminder.id }}">
-                                <strong>Expense:</strong> {{ reminder.expense.name }} - ${{ reminder.expense.amount }} <br>
-                                <strong>Due Date:</strong> {{ reminder.reminder_datetime.strftime('%Y-%m-%d %H:%M:%S') }} <br>
-                                <button id="paid-button-{{ reminder.id }}" onclick="markExpensePaid('{{ reminder.id }}')">Mark Expense Paid</button>
-                            </li>
-                        {% endfor %}
-                    </ul>
-                {% else %}
-                    <p>No urgent expense reminders at the moment.</p>
-                {% endif %}
+                <ul>
+                    <!-- Reminders will be dynamically inserted here by JavaScript -->
+                </ul>
             </div>
 
             <!-- Expenses Section -->
@@ -386,37 +419,39 @@
                 </div>
             </div>
 
-<!-- Payroll Section -->
-<div class="card payroll" id="payroll">
-    <h3>Payroll</h3>
-    <table>
-        <thead>
-            <tr>
-                <th>Employee</th>
-                <th>Position</th>
-                <th>Salary</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% if recent_payrolls %}
-                {% for payroll in recent_payrolls %}
-                <tr>
-                    <td>{{ payroll.employee_name }}</td>
-                    <td>{{ payroll.position }}</td>
-                    <td>${{ payroll.salary }}</td>
-                </tr>
-                {% endfor %}
-            {% else %}
-            <tr>
-                <td colspan="3">No recent payrolls found.</td>
-            </tr>
-            {% endif %}
-        </tbody>
-    </table>
-    <div class="view-more">
-        <a href="{{ url_for('views.payroll_management') }}">View More</a>
+            <!-- Payroll Section -->
+            <div class="card payroll" id="payroll">
+                <h3>Payroll</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Employee</th>
+                            <th>Position</th>
+                            <th>Salary</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if recent_payrolls %}
+                            {% for payroll in recent_payrolls %}
+                            <tr>
+                                <td>{{ payroll.employee_name }}</td>
+                                <td>{{ payroll.position }}</td>
+                                <td>${{ payroll.salary }}</td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                        <tr>
+                            <td colspan="3">No recent payrolls found.</td>
+                        </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+                <div class="view-more">
+                    <a href="{{ url_for('views.payroll_management') }}">View More</a>
+                </div>
+            </div>
+        </div>
     </div>
-</div>
     {% endblock %}
 </body>
 </html>

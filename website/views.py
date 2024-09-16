@@ -72,15 +72,19 @@ def dashboard():
 
     # Fetch employees with wage rates and attendance
     employees = Employee.query.all()
-    
+
     recent_payrolls = []
     for employee in employees:
         # Fetch the most recent wage rate for each employee
         wage_rate = WageRate.query.filter_by(employee_id=employee.employee_id).order_by(WageRate.id.desc()).first()
         # Fetch the most recent attendance record for each employee
         attendance = Attendance.query.filter_by(employee_id=employee.employee_id).order_by(Attendance.date.desc()).first()
-        
-        if wage_rate and attendance and attendance.status == 'Present':  # Only include if attendance marked as 'Present'
+
+        # Debugging: Print employee details to check if they are fetched properly
+        print(f"Employee: {employee.name}, Wage Rate: {wage_rate}, Attendance: {attendance}")
+
+        # Loosen the condition for testing (remove attendance.status == 'Present' for now)
+        if wage_rate and attendance:  # Removed attendance.status == 'Present' condition
             recent_payrolls.append({
                 'employee_name': employee.name,
                 'position': employee.position,
@@ -121,24 +125,22 @@ def mark_expense_paid(reminder_id):
         if reminder.user_id != current_user.id:
             return jsonify({"error": "Unauthorized"}), 403
 
-        # Fetch the associated expense
-        expense = reminder.expense
-
         # Mark the reminder as paid
         reminder.is_paid = True
 
-        # Delete the associated expense
-        db.session.delete(expense)
+        # Optionally mark the expense as paid, if you have added an is_paid field to Expense
+        expense = reminder.expense
+        expense.is_paid = True  # If you've added this field to Expense
 
         # Commit changes to the database
         db.session.commit()
 
-        return jsonify({"success": "Expense marked as paid and deleted successfully!"}), 200
+        return jsonify({"success": "Expense marked as paid successfully!"}), 200
     except Exception as e:
         # Log the exception for debugging
         print(f"Error: {e}")
         return jsonify({"error": "Error marking expense as paid."}), 500
-
+    
 @views.route('/settings', methods=['GET', 'POST'])
 @login_required
 def settings():
@@ -197,7 +199,6 @@ def settings():
 def set_expense_reminder():
     if request.method == 'POST':
         expense_category = request.form.get('expense')
-        reminder_type = request.form.get('reminder_type')
         reminder_datetime_str = request.form.get('reminder_datetime')
 
         # Convert the reminder_datetime_str to a datetime object
@@ -210,10 +211,10 @@ def set_expense_reminder():
         # Find the first matching expense for the given category and current user
         expense = Expense.query.filter_by(category=expense_category, user_id=current_user.id).first()
 
-        if expense and reminder_type and reminder_datetime:
+        # Ensure the expense and reminder datetime are present
+        if expense and reminder_datetime:
             new_reminder = Reminder(
                 expense=expense,
-                reminder_type=reminder_type,
                 reminder_datetime=reminder_datetime,
                 user=current_user
             )
@@ -241,6 +242,25 @@ def set_expense_reminder():
         expense_totals=expense_totals, 
         reminders=reminders
     )
+
+@views.route('/get_urgent_reminders', methods=['GET'])
+@login_required
+def get_urgent_reminders():
+    urgent_reminders = Reminder.query.filter(
+        Reminder.reminder_datetime <= datetime.now(),
+        Reminder.is_paid == False,
+        Reminder.user_id == current_user.id
+    ).all()
+
+    # Prepare data to send as JSON
+    reminder_list = [{
+        'id': reminder.id,
+        'expense_name': reminder.expense.name,
+        'amount': reminder.expense.amount,
+        'reminder_datetime': reminder.reminder_datetime.strftime('%Y-%m-%d %H:%M:%S')
+    } for reminder in urgent_reminders]
+
+    return jsonify(reminder_list)
 
 @views.route('/clear-expense-reminder-log', methods=['POST'])
 @login_required
@@ -524,13 +544,11 @@ def update_expenses():
                             start_date=start_date.strftime('%Y-%m-%d'), 
                             end_date=end_date.strftime('%Y-%m-%d')))
 
-
-
 @views.route('/payroll-management', methods=['GET', 'POST'])
 @login_required
 def payroll_management():
     if request.method == 'POST':
-        employee_id = request.form.get('employee_id')  # Retrieve employee ID
+        employee_id = request.form.get('employee_id')
         name = request.form.get('name')
         position = request.form.get('position')
 

@@ -42,11 +42,12 @@ class Expense(db.Model):
     date = db.Column(db.Date, nullable=False)
     category = db.Column(db.String(50), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-
-    # New fields for vendor, client, and notes
     vendor = db.Column(db.String(100), nullable=True)
     client = db.Column(db.String(100), nullable=True)
     notes = db.Column(db.Text, nullable=True)
+
+    # Add the is_paid field
+    is_paid = db.Column(db.Boolean, default=False)
 
     # Relationship with Reminder, providing a unique backref
     reminders = db.relationship('Reminder', backref='related_expense', lazy=True)
@@ -86,7 +87,6 @@ class WageRate(db.Model):
 class Reminder(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     expense_id = db.Column(db.Integer, db.ForeignKey('expense.id'), nullable=False)
-    reminder_type = db.Column(db.String(50), nullable=False)  # e.g., 'One-time', 'Recurring'
     reminder_datetime = db.Column(db.DateTime, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     is_paid = db.Column(db.Boolean, default=False)  # New field to track if the expense has been marked as paid

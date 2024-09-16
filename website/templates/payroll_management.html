@@ -1,9 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- Add meta tags, title, and other head content here -->
     <style>
-        /* Add styles specific to payroll management here */
         .payroll-container {
             display: flex;
             flex-direction: row;
@@ -47,12 +45,8 @@
             transform: scale(1.05);
         }
 
-        .left-side .settings-logout-container {
-            margin-top: auto;
-        }
-
-        .left-side .settings, .left-side .logout {
-            margin: 10px 0;
+        .settings-logout-container {
+            margin-top: auto; /* Pushes the buttons to the bottom */
         }
 
         .right-side {
@@ -118,10 +112,6 @@
             background-color: #f3f4f6;
         }
 
-        .editable {
-            background-color: #f3f4f6;
-        }
-
         .editable input {
             width: 100%;
             border: none;
@@ -137,6 +127,7 @@
     </style>
     <script>
         function deleteEmployee(employeeId) {
+            console.log("Deleting Employee ID:", employeeId);  // Debugging
             fetch(`/delete_employee/${employeeId}`, {
                 method: 'POST',
                 headers: {
@@ -167,12 +158,14 @@
             const name = row.querySelector('td.name input').value;
             const position = row.querySelector('td.position input').value;
 
+            console.log("Saving Employee ID:", employeeId);  // Debugging
+
             fetch(`/edit_employee/${employeeId}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({name, position})
+                body: JSON.stringify({ name, position })
             }).then(response => {
                 if (response.ok) {
                     row.querySelector('td.name').innerText = name;
@@ -198,6 +191,8 @@
             <a href="{{ url_for('views.payroll_management') }}">Manage Employees</a>
             <a href="{{ url_for('views.manage_attendance') }}">Manage Attendance</a>
             <a href="{{ url_for('views.manage_wagerates') }}">Manage Wage Rates</a>
+            
+            <!-- Settings and Logout buttons moved to bottom -->
             <div class="settings-logout-container">
                 <a href="{{ url_for('views.settings') }}" class="settings">Settings</a>
                 <a href="{{ url_for('views.logout') }}" class="logout">Logout</a>
@@ -235,8 +230,8 @@
                             <td class="position editable">{{ employee.position }}</td>
                             <td>
                                 <button type="button" class="edit-button" onclick="enableEditing('employee-{{ employee.id }}')">Edit</button>
-                                <button type="button" class="save-button" style="display:none;" onclick="saveEmployee('employee-{{ employee.id }}', {{ employee.id }})">Save</button>
-                                <button type="button" onclick="deleteEmployee({{ employee.id }})">Delete</button>
+                                <button type="button" class="save-button" style="display:none;" onclick="saveEmployee('employee-{{ employee.id }}', '{{ employee.id }}')">Save</button>
+                                <button type="button" onclick="deleteEmployee('{{ employee.id }}')">Delete</button>
                             </td>
                         </tr>
                         {% endfor %}
